@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>検査成績書ダウンロード</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', 'Meiryo', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 480px;
+            width: 100%;
+            padding: 40px;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo svg {
+            width: 64px;
+            height: 64px;
+            fill: #667eea;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .info-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            color: #666;
+            font-size: 14px;
+        }
+        .info-value {
+            color: #333;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            letter-spacing: 4px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .download-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        .download-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .error-msg {
+            color: #dc3545;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
+        .success-msg {
+            color: #28a745;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #999;
+            font-size: 12px;
+        }
+        .expired {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .expired svg {
+            width: 80px;
+            height: 80px;
+            fill: #dc3545;
+            margin-bottom: 20px;
+        }
+        .expired h2 {
+            color: #dc3545;
+            margin-bottom: 10px;
+        }
+        .expired p {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="mainContainer">
+        <div class="logo">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/><path d="M9 13h6v2H9zm0 4h6v2H9zm0-8h3v2H9z"/></svg>
+        </div>
+        <h1>検査成績書ダウンロード</h1>
+        <p class="subtitle">パスワードを入力してファイルをダウンロード</p>
+
+        <div class="info-box" id="infoBox">
+            <div class="info-row">
+                <span class="info-label">ファイル名</span>
+                <span class="info-value" id="fileName">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">品番</span>
+                <span class="info-value" id="productCode">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">ロット番号</span>
+                <span class="info-value" id="lotNo">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">有効期限</span>
+                <span class="info-value" id="expireDate">-</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="password">パスワード</label>
+            <input type="password" id="password" placeholder="****" maxlength="8">
+        </div>
+
+        <button class="download-btn" id="downloadBtn" onclick="downloadFile()">
+            ダウンロード
+        </button>
+
+        <p class="error-msg" id="errorMsg">パスワードが正しくありません</p>
+        <p class="success-msg" id="successMsg">ダウンロードを開始しました</p>
+
+        <div class="footer">
+            このリンクは有効期限後に無効になります
+        </div>
+    </div>
+
+    <div class="container expired" id="expiredContainer" style="display:none;">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        <h2>リンクが無効です</h2>
+        <p>このダウンロードリンクは有効期限が切れているか、<br>無効なリンクです。</p>
+    </div>
+
+    <script>
+        // URLパラメータからデータ取得
+        var params = new URLSearchParams(window.location.search);
+        var data = params.get('d');
+
+        var fileData = null;
+
+        if (data) {
+            try {
+                // Base64デコードしてJSONパース
+                fileData = JSON.parse(atob(data));
+
+                // 有効期限チェック
+                var expireDate = new Date(fileData.expire);
+                var now = new Date();
+
+                if (now > expireDate) {
+                    // 期限切れ
+                    document.getElementById('mainContainer').style.display = 'none';
+                    document.getElementById('expiredContainer').style.display = 'block';
+                } else {
+                    // 情報表示
+                    document.getElementById('fileName').textContent = fileData.fileName || '-';
+                    document.getElementById('productCode').textContent = fileData.productCode || '-';
+                    document.getElementById('lotNo').textContent = fileData.lotNo || '-';
+                    document.getElementById('expireDate').textContent = formatDate(expireDate);
+                }
+            } catch (e) {
+                console.error('データ解析エラー:', e);
+                document.getElementById('mainContainer').style.display = 'none';
+                document.getElementById('expiredContainer').style.display = 'block';
+            }
+        } else {
+            document.getElementById('mainContainer').style.display = 'none';
+            document.getElementById('expiredContainer').style.display = 'block';
+        }
+
+        function formatDate(date) {
+            return date.getFullYear() + '年' +
+                   (date.getMonth() + 1) + '月' +
+                   date.getDate() + '日 ' +
+                   date.getHours() + ':' +
+                   String(date.getMinutes()).padStart(2, '0');
+        }
+
+        // Enterキーでダウンロード
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                downloadFile();
+            }
+        });
+
+        // ダウンロード処理
+        function downloadFile() {
+            var inputPassword = document.getElementById('password').value;
+            var errorMsg = document.getElementById('errorMsg');
+            var successMsg = document.getElementById('successMsg');
+
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            if (!fileData || !fileData.password || !fileData.content) {
+                errorMsg.textContent = 'ファイルデータが不正です';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            // パスワード照合
+            if (inputPassword !== fileData.password) {
+                errorMsg.textContent = 'パスワードが正しくありません';
+                errorMsg.style.display = 'block';
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+                return;
+            }
+
+            try {
+                // Base64からバイナリに変換
+                var binaryString = atob(fileData.content);
+                var bytes = new Uint8Array(binaryString.length);
+                for (var i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+
+                // Blobを作成してダウンロード
+                var blob = new Blob([bytes], {
+                    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                });
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = fileData.fileName;
+                a.click();
+                window.URL.revokeObjectURL(url);
+
+                successMsg.style.display = 'block';
+
+            } catch (e) {
+                console.error('ダウンロードエラー:', e);
+                errorMsg.textContent = 'ダウンロードに失敗しました';
+                errorMsg.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
