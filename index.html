@@ -216,8 +216,8 @@
 
         if (data) {
             try {
-                // Base64デコードしてJSONパース
-                fileData = JSON.parse(atob(data));
+                // Base64デコードしてJSONパース（UTF-8対応）
+                fileData = JSON.parse(decodeURIComponent(atob(data)));
 
                 // 有効期限チェック
                 var expireDate = new Date(fileData.expire);
